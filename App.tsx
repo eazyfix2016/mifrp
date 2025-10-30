@@ -54,7 +54,16 @@ const initialSteps: Step[] = [
 const App: React.FC = () => {
     const [view, setView] = useState('customer'); // 'customer' or 'admin'
     const [isAuthenticated, setIsAuthenticated] = useState(() => {
-        return sessionStorage.getItem('isAdminAuthenticated') === 'true';
+        const token = sessionStorage.getItem('adminToken');
+        if (!token) return false;
+        try {
+            // تحقق من صلاحية التوكن (مثال بسيط)
+            const [timestamp, hash] = token.split('.');
+            const isValid = parseInt(timestamp) > Date.now() - (24 * 60 * 60 * 1000); // 24 ساعة
+            return isValid;
+        } catch {
+            return false;
+        }
     });
     const [steps, setSteps] = useState<Step[]>(() => {
         try {
@@ -74,15 +83,24 @@ const App: React.FC = () => {
         }
     }, [steps]);
 
+    const generateToken = () => {
+        const timestamp = Date.now().toString();
+        const random = Math.random().toString(36).substring(2);
+        return `${timestamp}.${random}`;
+    };
+
     const handleLogin = () => {
-        sessionStorage.setItem('isAdminAuthenticated', 'true');
+        const token = generateToken();
+        sessionStorage.setItem('adminToken', token);
         setIsAuthenticated(true);
     };
 
     const handleLogout = () => {
-        sessionStorage.removeItem('isAdminAuthenticated');
+        sessionStorage.removeItem('adminToken');
         setIsAuthenticated(false);
         setView('customer');
+        // تنظيف أي بيانات حساسة من الذاكرة
+        setSteps(initialSteps);
     };
 
     if (view === 'admin') {
