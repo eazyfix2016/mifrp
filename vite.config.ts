@@ -15,7 +15,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
-  base: './',
+  base: '/mifrp/',
   build: {
     outDir: 'dist',
     sourcemap: true,
